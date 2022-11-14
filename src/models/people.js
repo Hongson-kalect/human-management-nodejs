@@ -53,7 +53,9 @@ module.exports = (sequelize, DataTypes) => {
       avatar: DataTypes.STRING,
       description: DataTypes.STRING,
       deleted: DataTypes.STRING,
-      //deletedAt: DataTypes.DATE,
+      deletedAt: DataTypes.DATE,
+      dayIn: DataTypes.DATE,
+      dayOut: DataTypes.DATE,
     },
     {
       sequelize,

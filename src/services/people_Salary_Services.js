@@ -56,31 +56,7 @@ const getAll = async (options) => {
               [Op.in]: [null, "false"],
             },
           },
-          {
-            gender: {
-              [Op.like]: `%${options.gender || ""}%`,
-            },
-          },
-          {
-            address: {
-              [Op.like]: `%${options.address || ""}%`,
-            },
-          },
-          {
-            salaryType: {
-              [Op.like]: `%${options.salarytype || ""}%`,
-            },
-          },
-          {
-            mainRole: {
-              [Op.like]: `%${options.mainrole || ""}%`,
-            },
-          },
-          {
-            subRole: {
-              [Op.like]: `%${options.subrole || ""}%`,
-            },
-          },
+
           {
             [Op.or]: [
               {
@@ -100,6 +76,26 @@ const getAll = async (options) => {
               },
               {
                 address: {
+                  [Op.like]: `%${options.s || ""}%`,
+                },
+              },
+              {
+                gender: {
+                  [Op.like]: `%${options.s || ""}%`,
+                },
+              },
+              {
+                salaryType: {
+                  [Op.like]: `%${options.s || ""}%`,
+                },
+              },
+              {
+                mainRole: {
+                  [Op.like]: `%${options.s || ""}%`,
+                },
+              },
+              {
+                subRole: {
                   [Op.like]: `%${options.s || ""}%`,
                 },
               },
@@ -151,6 +147,18 @@ const getAll = async (options) => {
 const add = async (params) => {
   try {
     if (addValidate(params)) {
+      const dateOut = params.dayIn?.split("-");
+      if (params.dayOut !== 0) {
+        dateOut[0] =
+          Number(dateOut[0]) +
+          Math.floor((Number(dateOut[1]) + Number(params.dayOut)) / 12);
+        dateOut[1] = Math.floor(
+          (Number(dateOut[1]) + Number(params.dayOut)) % 12
+        );
+      } else {
+        dateOut[0] = Number(dateOut[0]) + 100;
+      }
+      params.dayOut = `${dateOut[0]}-${dateOut[1]}-${dateOut[2]}`;
       const peopleInit = {
         email: params.email || "",
         password: params.password || "",
@@ -164,6 +172,8 @@ const add = async (params) => {
         mainRole: params.mainRole || "",
         subRole: params.subRole || "",
         salaryType: params.salaryType || "",
+        dayIn: params.dayIn || "",
+        dayOut: params.dayOut || "",
         avatar: params.avatar || "",
         description: params.peopleDescription || "",
       };
@@ -213,6 +223,8 @@ const edit = async (params) => {
         mainRole: params.mainRole,
         subRole: params.subRole,
         salaryType: params.salaryType,
+        dayIn: params.dayIn || "",
+        dayOut: params.dayOut || "",
         avatar: params.avatar,
         description: params.peopleDescription,
         updateAt: Date.now(),

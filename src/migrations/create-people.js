@@ -52,6 +52,7 @@ module.exports = {
       },
       deleted: {
         type: Sequelize.STRING,
+        defaultValue: "false",
       },
       createdAt: {
         allowNull: false,
@@ -63,6 +64,14 @@ module.exports = {
       },
       deletedAt: {
         allowNull: false,
+        type: Sequelize.DATE,
+      },
+      dayIn: {
+        allowNull: false,
+        type: Sequelize.DATE,
+      },
+      dayOut: {
+        allowNull: true,
         type: Sequelize.DATE,
       },
     });

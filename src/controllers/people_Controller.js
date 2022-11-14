@@ -5,17 +5,18 @@ import {
   get,
   del,
   checkEmail,
+  changepass,
+  getExpired,
+  extend,
 } from "../services/people_Services";
 
 const People_Controller = {
   login: async (req, res) => {
     try {
       const params = req.body;
-      console.log(params.email);
       const userInfo = await checkEmail(params.email);
       if (userInfo)
         if (userInfo.password === params.password) {
-          console.log("qq");
           delete userInfo.password;
           res.json({
             errorCode: 1,
@@ -42,6 +43,48 @@ const People_Controller = {
         errorCode: -1,
         data: {},
         message: "Server error",
+      });
+    }
+  },
+  changepass: async (req, res) => {
+    try {
+      const params = req.body;
+      const userInfo = await checkEmail(params.email);
+      if (userInfo) {
+        if (userInfo.password === params.currentPassword) {
+          const data = await changepass(params);
+          if (data) {
+            res.json({
+              errorCode: 1,
+              data: { data },
+              message: "Change password successfully",
+            });
+          } else {
+            res.json({
+              errorCode: 0,
+              data: {},
+              message: "Error",
+            });
+          }
+        } else {
+          res.json({
+            errorCode: 0,
+            data: {},
+            message: "Password not correct",
+          });
+        }
+      } else {
+        res.json({
+          errorCode: 0,
+          data: {},
+          message: "Email evalid",
+        });
+      }
+    } catch (error) {
+      res.json({
+        errorCode: -1,
+        data: {},
+        message: "Server or Network Error",
       });
     }
   },
@@ -135,6 +178,11 @@ const People_Controller = {
       req.query.address && (options.address = req.query.address);
       req.query.offset && (options.offset = req.query.offset);
       req.query.limit && (options.limit = req.query.limit);
+      req.query.dayInStart && (options.dayInStart = req.query.dayInStart);
+      req.query.dayInEnd && (options.dayInEnd = req.query.dayInEnd);
+      req.query.dayOutStart && (options.dayOutStart = req.query.dayOutStart);
+      req.query.dayOutEnd && (options.dayOutEnd = req.query.dayOutEnd);
+      req.query.room && (options.room = req.query.room);
       const data = await getAll(options);
       res.json({
         message: "qq",
@@ -144,6 +192,37 @@ const People_Controller = {
       return true;
     } catch (error) {
       console.log("Failed to get all from controller ", error);
+      res.json({
+        errorCode: -1,
+        data: {},
+      });
+    }
+  },
+
+  getExpired: async (req, res) => {
+    try {
+      const data = await getExpired();
+      res.json({
+        data: data,
+      });
+    } catch (error) {
+      console.log("Failed to get from controller ", error);
+      res.json({
+        errorCode: -1,
+        data: {},
+      });
+    }
+  },
+  extend: async (req, res) => {
+    try {
+      const params = req.body;
+      const data = await extend(params);
+      res.json({
+        errorCode: 1,
+        data: data,
+      });
+    } catch (error) {
+      console.log("Failed to get from controller ", error);
       res.json({
         errorCode: -1,
         data: {},

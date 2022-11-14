@@ -1,5 +1,9 @@
 "use strict";
 
+const currentTime = new Date();
+let hundredYearFromNow = new Date();
+hundredYearFromNow.setFullYear(hundredYearFromNow.getFullYear() + 100);
+
 module.exports = {
   async up(queryInterface, Sequelize) {
     return queryInterface.bulkInsert("People", [
@@ -19,6 +23,8 @@ module.exports = {
         description: "CEO HS Group",
         createdAt: new Date(),
         updatedAt: new Date(),
+        dayIn: new Date(),
+        dayOut: hundredYearFromNow,
       },
       {
         email: "test@gmail.com",
@@ -36,6 +42,8 @@ module.exports = {
         description: "Manager",
         createdAt: new Date(),
         updatedAt: new Date(),
+        dayIn: new Date(),
+        dayOut: hundredYearFromNow,
       },
     ]);
   },

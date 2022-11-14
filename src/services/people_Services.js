@@ -1,4 +1,4 @@
-import { Sequelize } from "sequelize";
+import { Sequelize, where } from "sequelize";
 import db from "../models/index";
 const Op = Sequelize.Op;
 
@@ -32,6 +32,12 @@ const getAll = async (options) => {
       "salaryType-DESC",
       "gender-ASC",
       "gender-DESC",
+      "dayIn-ASC",
+      "dayIn-DESC",
+      "dayOut-ASC",
+      "dayOut-DESC",
+      "name-ASC",
+      "name-DESC",
     ];
     options.mainrole &&
       (mainRoleList.includes(options.mainrole) || (options.mainrole = ""));
@@ -41,33 +47,38 @@ const getAll = async (options) => {
       (orderList.includes(options.sort) || (options.sort = "id-ASC"));
 
     const sortType = options.sort.split("-");
-
+    console.log(options);
     const data = await db.People.findAll({
       where: {
         [Op.and]: [
           {
-            gender: {
-              [Op.like]: `%${options.gender || ""}%`,
+            workRoom: {
+              [Op.like]: `%${options.room || ""}%`,
             },
           },
           {
-            address: {
-              [Op.like]: `%${options.address || ""}%`,
+            deleted: {
+              [Op.in]: [null, "false"],
             },
           },
           {
-            salaryType: {
-              [Op.like]: `%${options.salarytype || ""}%`,
+            dayIn: {
+              [Op.gte]: options.dayInStart || "2000-11-11",
             },
           },
           {
-            mainRole: {
-              [Op.like]: `%${options.mainrole || ""}%`,
+            dayIn: {
+              [Op.lte]: `${options.dayInEnd + " 23:59:59"}` || "2200-11-11",
             },
           },
           {
-            subRole: {
-              [Op.like]: `%${options.subrole || ""}%`,
+            dayOut: {
+              [Op.gte]: options.dayOutStart || "2000-11-11",
+            },
+          },
+          {
+            dayOut: {
+              [Op.lte]: `${options.dayOutEnd + " 23:59:59"}` || "2200-11-11",
             },
           },
           {
@@ -92,6 +103,26 @@ const getAll = async (options) => {
                   [Op.like]: `%${options.s || ""}%`,
                 },
               },
+              {
+                gender: {
+                  [Op.like]: `%${options.s || ""}%`,
+                },
+              },
+              {
+                salaryType: {
+                  [Op.like]: `%${options.s || ""}%`,
+                },
+              },
+              {
+                mainRole: {
+                  [Op.like]: `%${options.s || ""}%`,
+                },
+              },
+              {
+                subRole: {
+                  [Op.like]: `%${options.s || ""}%`,
+                },
+              },
             ],
           },
         ],
@@ -112,6 +143,7 @@ const getAll = async (options) => {
       order: [sortType],
       offset: +options.offset || 0,
       limit: +options.limit || null,
+      group: ["id"],
     });
     return data;
   } catch (error) {
@@ -264,6 +296,15 @@ const login = async (params) => {
   return false;
 };
 
+const changepass = async (params) => {
+  return await db.People.update(
+    { password: params.newPassword },
+    {
+      where: { email: params.email },
+    }
+  );
+};
+
 const addValidate = (data) => {
   if (
     data.email &&
@@ -280,4 +321,69 @@ const addValidate = (data) => {
   }
   return false;
 };
-export { getAll, add, edit, get, del, checkEmail, login };
+const getExpired = async (params) => {
+  try {
+    let compareDate = new Date().toISOString().slice(0, 10);
+    const dateArray = compareDate.split("-");
+    dateArray[0] = Number(dateArray[0]) + Math.floor(Number(dateArray[1]) / 12);
+    dateArray[1] =
+      (Number(dateArray[1]) + 1) % 12 === 0
+        ? 12
+        : (Number(dateArray[1]) + 1) % 12;
+    compareDate = `${dateArray[0]}-${dateArray[1]}-${dateArray[2]}`;
+    console.log(dateArray);
+    console.log(compareDate);
+    const data = await db.People.findAll({
+      where: {
+        dayOut: {
+          [Op.lt]: compareDate,
+        },
+      },
+      include: [
+        {
+          model: db.KeyWord,
+          as: "mainrole-keyword",
+          attributes: ["viValue", "enValue"],
+        },
+        {
+          model: db.KeyWord,
+          as: "subrole-keyword",
+          attributes: ["viValue", "enValue"],
+        },
+      ],
+      attributes: { exclude: ["password"] },
+      group: ["id"],
+    });
+    return data;
+  } catch (error) {
+    console.log(error);
+    return false;
+  }
+};
+const extend = async (params) => {
+  try {
+    await db.People.update(
+      { dayOut: params.dayOut },
+      {
+        where: {
+          id: params.id,
+        },
+      }
+    );
+    return true;
+  } catch (error) {
+    return false;
+  }
+};
+export {
+  getAll,
+  add,
+  edit,
+  get,
+  del,
+  checkEmail,
+  login,
+  changepass,
+  getExpired,
+  extend,
+};

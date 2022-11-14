@@ -18,6 +18,7 @@ router.post("/p/add", PeopleController.add);
 router.post("/p/login", PeopleController.login);
 router.put("/p/edit/:id", PeopleController.edit);
 router.delete("/p/del/:id", PeopleController.del);
+router.get("/p/expired", PeopleController.getExpired);
 router.get("/p/:id", PeopleController.get);
 router.get("/p/", PeopleController.getAll);
 
@@ -34,6 +35,8 @@ router.get("/daycheck", Daycheck_Controller.getDayCheck);
 router.get("/daycheck/:id", Daycheck_Controller.getDayCheckOne);
 
 router.post("/login", PeopleController.login);
+router.put("/changepass", PeopleController.changepass);
+router.put("/extend", PeopleController.extend);
 
 router.get("/keyword", (req, res) => res.send("go this route"));
 router.get("/keyword/mainrole", KeyWord_Controller.getMainRole);
